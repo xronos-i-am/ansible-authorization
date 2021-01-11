@@ -1,0 +1,13 @@
+- name: Find public keys
+  find:
+    paths: "~{{user}}/.ssh"
+    patterns: '*.pub'
+    recurse: yes
+  register: get_public_keys
+
+- name: Agent autostart
+  lineinfile:
+    path: "~{{user}}/.bashrc"
+    regexp: " {{item.path | basename | splitext | first}}[)]" # https://stackoverflow.com/a/32656118/2041969
+    line: "eval $(keychain --eval {{item.path | basename | splitext | first}})" # eval $(keychain --eval id_ed25519)
+  with_items: "{{ get_public_keys.files }}"

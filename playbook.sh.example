@@ -1,0 +1,2 @@
+# python3 $(which ansible-playbook) --ask-become-pass --extra-vars "user=" ./playbook.yml
+python3 $(which ansible-playbook) --ask-become-pass --become playbook.yml

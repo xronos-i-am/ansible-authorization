@@ -1,0 +1,42 @@
+---
+
+- name: configure authorization
+  hosts: 127.0.0.1
+  connection: local
+  become: yes
+  gather_facts: no
+
+  pre_tasks:
+    - name: Get ubuntu release
+      command: "sed 's/DISTRIB_CODENAME=//;t;d' /etc/upstream-release/lsb-release"
+      register: get_ubuntu_release
+      changed_when: False
+    - name: Get ubuntu version
+      command: "sed 's/DISTRIB_RELEASE=//;t;d' /etc/upstream-release/lsb-release"
+      register: get_ubuntu_version
+      changed_when: False
+
+  vars:
+    codename: "{{get_ubuntu_release.stdout}}"
+    ubuntu_version: "{{get_ubuntu_version.stdout}}"
+    user_path: "~{{user}}"
+    home_path: "{{user_path | expanduser}}"
+
+  vars_prompt:
+    - name: user
+      prompt: whoami?
+    - name: keepass_password
+      prompt: "Enter keepass DB password"
+      private: yes
+    - name: keepass_db_file
+      prompt: "Enter path to keepass DB"
+
+  tasks:
+    - debug: msg="Ubuntu {{ubuntu_version}} {{codename}}"
+    - debug: msg="Username {{user}}"
+
+  roles:
+    # - { role: ssh_keys }
+    # - { role: yandex_disk }
+    # - { role: mailru_disk }
+    - { role: rclone }

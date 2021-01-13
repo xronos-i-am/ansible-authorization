@@ -1,7 +1,13 @@
 - set_fact:
     mailru_auth: "{{ lookup('keepass', {'tag':'mailru-disk'}, search='custom') }}"
     mailru_endpoint: https://webdav.cloud.mail.ru
-    mount_point: "~{{user}}/.mailru-disk"
+    default_mount_point: "~{{user}}/.mailru-disk"
+
+- name: ask mount point
+  pause:
+    prompt: "Enter Mailru mount point ('{{ default_mount_point }}' by default)"
+  register: mount_point
+  changed_when: false
 
 - name: secrets
   lineinfile: path=/etc/davfs2/secrets line="{{mailru_endpoint}} {{mailru_auth.username}} {{mailru_auth.password}}" state=present
@@ -14,8 +20,8 @@
     mode: '0600'
 
 - name: add mount point
-  file: path="{{mount_point}}" state=directory
+  file: path="{{ mount_point.user_input or default_mount_point }}" state=directory
 
-- name: mount
-  mount: path={{ mount_point }} src={{ mailru_endpoint }} state=mounted fstype=davfs opts="{{ item.mount }},uid={{ item.uid }},gid={{ item.guid }}"
+# - name: mount
+#   mount: path={{ mount_point.user_input or default_mount_point }} src={{ mailru_endpoint }} state=mounted fstype=davfs opts="{{ item.mount }},uid={{ item.uid }},gid={{ item.guid }}"
 

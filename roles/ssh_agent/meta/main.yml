@@ -1,4 +1,3 @@
 ---
 dependencies:
-  - { role: keychain }
   - { role: ssh_keys }

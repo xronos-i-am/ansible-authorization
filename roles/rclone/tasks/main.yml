@@ -1,2 +1,13 @@
+- set_fact:
+    yandex_auth: "{{ lookup('keepass', {'tag':'yandex-disk'}, search='custom') }}"
+
 - name: apt-get install rclone
   apt: name=rclone update_cache=yes state=latest
+
+# rclone authorize "yandex"
+- name: configure
+  template:
+    src: rclone.conf.j2
+    dest: "~{{ user }}/.config/rclone/rclone.conf"
+  become: true
+  become_user: "{{ user }}"   

@@ -1,4 +1,11 @@
----
+- set_fact:
+    config_path: "~{{user}}/.config/yandex-disk"
+  
+- set_fact:
+    yandex_auth: "{{ lookup('keepass', {'tag':'yandex-disk'}, search='custom') }}"
+    default_mount_point: "~{{user}}/.yandex-disk"
+    token_path: "{{ config_path }}/passwd"
+
 # https://yandex.com/support/disk/cli-clients.xml#cli-install
 - name: Key
   apt_key: url="http://repo.yandex.ru/yandex-disk/YANDEX-DISK-KEY.GPG"
@@ -9,31 +16,46 @@
 - name: apt-get install yandex-disk
   apt: name=yandex-disk update_cache=yes state=latest
 
+- name: check config
+  file:
+    path: "~{{user}}/.config/yandex-disk/config.cfg"
+    state: file
+  failed_when: false
+  register: check_yd_config
+
+- name: ask mount point
+  pause:
+    prompt: "Enter YD mount point ('{{ default_mount_point }}' by default)"
+  register: mount_point
+  changed_when: false
+  when: check_yd_config.state == 'absent'
+
 - name: config
   template:
     src: config.cfg.j2
-    dest: "~{{user}}/.config/yandex-disk/config.cfg"
+    dest: "{{ config_path }}/config.cfg"
     backup: true
   become: true
-  become_user: "{{user}}"
+  become_user: "{{ user }}"
+  when: check_yd_config.state == 'absent'
 
 # https://github.com/slytomcat/yandex-disk-indicator
 - name: Yandex Disk Indicator - add ppa
-  apt_repository: repo="ppa:slytomcat/ppa" codename="{{codename}}" filename=yd-tools
+  apt_repository: repo="ppa:slytomcat/ppa" codename="{{ codename }}" filename=yd-tools
 
 - name: install Yandex Disk Indicator
   apt: name=yd-tools update_cache=yes
-
-- set_fact:
-    yandex_auth: "{{ lookup('keepass', {'tag':'yandex-disk'}, search='custom') }}"
-
+ 
 - name: Check token exists
-  stat: 
-    path: "~{{user}}/.config/yandex-disk/passwd"
+  file:
+    path: "{{ token_path }}"
+    state: file
+  failed_when: false
   register: check_yd_token
 
 - name: Create token
-  command: yandex-disk token --password={{yandex_auth.password}} {{yandex_auth.username}} "~{{user}}/.config/yandex-disk/passwd"
+  command: yandex-disk token --password={{yandex_auth.password}} {{yandex_auth.username}} "{{ token_path }}"
   become: true
   become_user: "{{user}}"
-  when: check_yd_token.stat.exists == False
+  when: check_yd_token.state == 'absent'
+

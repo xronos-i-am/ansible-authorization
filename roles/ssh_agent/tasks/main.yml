@@ -1,3 +1,6 @@
+- name: apt-get install keychain
+  apt: name=keychain state=latest
+
 - name: Find public keys
   find:
     paths: "~{{user}}/.ssh"

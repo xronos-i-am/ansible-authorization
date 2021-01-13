@@ -36,7 +36,7 @@
     - debug: msg="Username {{user}}"
 
   roles:
-    # - { role: ssh_keys }
-    # - { role: yandex_disk }
+    - { role: ssh_agent }
+    - { role: yandex_disk }
     # - { role: mailru_disk }
-    - { role: rclone }
+    # - { role: rclone }

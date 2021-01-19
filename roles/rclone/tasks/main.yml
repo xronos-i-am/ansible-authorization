@@ -1,13 +1,65 @@
 - set_fact:
+    rclone_config_dir: "~{{ user }}/.config/rclone"
     yandex_auth: "{{ lookup('keepass', {'tag':'yandex-disk'}, search='custom') }}"
 
-- name: apt-get install rclone
-  apt: name=rclone update_cache=yes state=latest
+- name: Check latest stable rclone version number
+  uri:
+    url: https://downloads.rclone.org/version.txt
+    return_content: true
+  register:
+    get_rclone_latest_version
+
+- name: Check current rclone version
+  shell: rclone --version
+  ignore_errors: True
+  changed_when: False
+  register:
+    get_rclone_current_version
+
+- name: Set versions
+  set_fact:
+    rclone_latest_version: "{{ get_rclone_latest_version.content.split('\n') | first | regex_replace ('[^\\d\\.]', '') | trim }}"
+    rclone_current_version: "{{ get_rclone_current_version.stdout.split('\n') | first | regex_replace ('[^\\d\\.]', '') | trim }}"
+    rclone_setup_tmp_dir: /tmp/rclone-setup
+
+- name: Create temporary working directory
+  file:
+    path: "{{ rclone_setup_tmp_dir }}"
+    state: directory
+    mode: '0775'
+
+- name: Download rclone {{ rclone_latest_version }}
+  unarchive:
+    src: https://downloads.rclone.org/v{{ rclone_latest_version }}/rclone-v{{ rclone_latest_version }}-linux-amd64.zip
+    dest: "{{ rclone_setup_tmp_dir }}"
+    remote_src: true
+    mode: 0744
+    creates: "{{ rclone_setup_tmp_dir }}/rclone-v{{ rclone_latest_version }}-linux-{{ rclone_latest_version }}"
+  when: rclone_latest_version != rclone_current_version
+
+- name: Copy rclone binary
+  copy:
+    src: "{{ rclone_setup_tmp_dir }}/rclone-v{{ rclone_latest_version }}-linux-amd64/rclone"
+    dest: "/usr/local/bin/rclone"
+    mode: '0755'
+    owner: root
+    group: root
+    remote_src: true
+  when: rclone_latest_version != rclone_current_version
+
+- name: Create config directory
+  file:
+    path: '{{ rclone_config_dir }}'
+    state: directory
+    mode: '0700'
+  become: true
+  become_user: "{{ user }}"
+  when: rclone_latest_version != rclone_current_version
 
 # rclone authorize "yandex"
 - name: configure
   template:
     src: rclone.conf.j2
-    dest: "~{{ user }}/.config/rclone/rclone.conf"
+    dest: "{{ rclone_config_dir }}/rclone.conf"
   become: true
   become_user: "{{ user }}"   

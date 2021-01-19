@@ -39,4 +39,4 @@
     - { role: ssh_agent }
     - { role: yandex_disk }
     # - { role: mailru_disk }
-    # - { role: rclone }
+    - { role: rclone }

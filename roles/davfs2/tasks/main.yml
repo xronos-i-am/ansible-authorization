@@ -1,3 +1,5 @@
+# https://wiki.archlinux.org/index.php/Davfs2#Storing_credentials
+
 - name: apt-get install davfs2
   apt: name="davfs2" state=latest update_cache=yes
 

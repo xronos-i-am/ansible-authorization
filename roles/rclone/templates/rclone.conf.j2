@@ -3,3 +3,30 @@ type = yandex
 client_id = 
 client_secret = 
 token = {{ yandex_auth.fields.token }}
+
+[mailru_disk]
+type = webdav
+url = https://webdav.cloud.mail.ru:443
+vendor = other
+user = {{ mailru_auth.username }}
+pass = {{ mailru_auth.fields.pass }}
+
+[mailru_disk_encrypted]
+type = crypt
+remote = mailru_disk:private
+filename_encryption = off
+directory_name_encryption = false
+password = {{ mailru_auth.fields.password }}
+password2 = {{ mailru_auth.fields.password2 }}
+
+[mailru_disk_local]
+type = local
+nounc = true
+
+[mailru_disk_local_encrypted]
+type = crypt
+remote = mailru_disk_local:{{ home_path }}/mnt/mailru_disk_local
+filename_encryption = off
+directory_name_encryption = false
+password = {{ mailru_auth.fields.password }}
+password2 = {{ mailru_auth.fields.password2 }}

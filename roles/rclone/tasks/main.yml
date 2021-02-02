@@ -1,6 +1,12 @@
+# https://github.com/stefangweichinger/ansible-rclone
+
+# rclone mount mailru_disk_encrypted:/ ~/mnt/mailru_disk
+# fusermount -u ~/mnt/mailru_disk
+
 - set_fact:
     rclone_config_dir: "~{{ user }}/.config/rclone"
     yandex_auth: "{{ lookup('keepass', {'tag':'yandex-disk'}, search='custom') }}"
+    mailru_auth: "{{ lookup('keepass', {'tag':'mailru-disk'}, search='custom') }}"
 
 - name: Check latest stable rclone version number
   uri:

@@ -27,15 +27,17 @@
       prompt: whoami?
     - name: keepass_password
       prompt: "Enter keepass DB password"
-      private: yes
+      private: no
     - name: keepass_db_file
       prompt: "Enter path to keepass DB"
+      private: no
 
   tasks:
     - debug: msg="Ubuntu {{ubuntu_version}} {{codename}}"
     - debug: msg="Username {{user}}"
 
   roles:
+    - { role: python }
     - { role: ssh_agent }
     - { role: yandex_disk }
     # - { role: mailru_disk }

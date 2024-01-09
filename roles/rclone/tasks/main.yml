@@ -8,6 +8,8 @@
     yandex_auth: "{{ lookup('keepass', {'tag':'yandex-disk'}, search='custom') }}"
     mailru_auth: "{{ lookup('keepass', {'tag':'mailru-disk'}, search='custom') }}"
 
+- debug: msg="{{mailru_auth}}"
+
 - name: Check latest stable rclone version number
   uri:
     url: https://downloads.rclone.org/version.txt

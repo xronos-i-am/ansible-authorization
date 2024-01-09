@@ -1,7 +1,7 @@
 - set_fact:
     mailru_auth: "{{ lookup('keepass', {'tag':'mailru-disk'}, search='custom') }}"
     mailru_endpoint: https://webdav.cloud.mail.ru
-    default_mount_point: "~{{user}}/.mailru-disk"
+    default_mount_point: "{{home_path}}/.mailru-disk"
 
 - name: ask mount point
   pause:

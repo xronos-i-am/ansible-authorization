@@ -7,7 +7,7 @@
 
 - name: Copy public keys
   copy:
-    dest: "~{{user}}/.ssh/{{item.title}}.pub"
+    dest: "{{home_path}}/.ssh/{{item.title}}.pub"
     content: "{{ item.fields.public }}"
     owner: "{{user}}"
     group: "{{user}}"
@@ -17,7 +17,7 @@
   
 - name: Copy private keys
   copy:
-    dest: "~{{user}}/.ssh/{{item.title}}"
+    dest: "{{home_path}}/.ssh/{{item.title}}"
     content: "{{ item.fields.private }}"
     owner: "{{user}}"
     group: "{{user}}"
@@ -27,14 +27,14 @@
 
 - name: Check ed25519 key exists
   file:
-    path: "~{{user}}/.ssh/id_ed25519"
+    path: "{{home_path}}/.ssh/id_ed25519"
     state: file
   failed_when: false
   register: check_id_ed25519
 
 - name: Check rsa key exists
   file:
-    path: "~{{user}}/.ssh/id_rsa"
+    path: "{{home_path}}/.ssh/id_rsa"
     state: file
   failed_when: false
   register: check_id_rsa

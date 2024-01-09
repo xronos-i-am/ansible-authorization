@@ -1,24 +1,34 @@
 - set_fact:
-    config_path: "~{{user}}/.config/yandex-disk"
+    config_path: "{{home_path}}/.config/yandex-disk"
   
 - set_fact:
     yandex_auth: "{{ lookup('keepass', {'tag':'yandex-disk'}, search='custom') }}"
-    default_mount_point: "~{{user}}/.yandex-disk"
+    default_mount_point: "{{home_path}}/.yandex-disk"
     token_path: "{{ config_path }}/passwd"
+
+- name: Make dir
+  file:
+    path: "{{ config_path }}"
+    state: "directory"
+    owner: "{{ user }}"
+    group: "{{ user }}"
+
 
 # https://yandex.com/support/disk/cli-clients.xml#cli-install
 - name: Key
-  apt_key: url="http://repo.yandex.ru/yandex-disk/YANDEX-DISK-KEY.GPG"
+  get_url:
+    url: "https://repo.yandex.ru/yandex-disk/YANDEX-DISK-KEY.GPG"
+    dest: "/etc/apt/keyrings/yandex-disk.asc"
 
 - name: Repo
-  apt_repository: repo='deb http://repo.yandex.ru/yandex-disk/deb/ stable main'
+  apt_repository: repo='deb [signed-by=/etc/apt/keyrings/yandex-disk.asc] http://repo.yandex.ru/yandex-disk/deb/ stable main' filename="yandex-disk"
 
 - name: apt-get install yandex-disk
-  apt: name=yandex-disk update_cache=yes state=latest
+  apt: name=yandex-disk state=latest
 
 - name: check config
   file:
-    path: "~{{user}}/.config/yandex-disk/config.cfg"
+    path: "{{ config_path }}/config.cfg"
     state: file
   failed_when: false
   register: check_yd_config
@@ -40,11 +50,11 @@
   when: check_yd_config.state == 'absent'
 
 # https://github.com/slytomcat/yandex-disk-indicator
-- name: Yandex Disk Indicator - add ppa
-  apt_repository: repo="ppa:slytomcat/ppa" codename="{{ codename }}" filename=yd-tools
+#- name: Yandex Disk Indicator - add ppa
+#  apt_repository: repo="ppa:slytomcat/ppa" codename="{{ codename }}" filename=yd-tools
 
-- name: install Yandex Disk Indicator
-  apt: name=yd-tools update_cache=yes
+#- name: install Yandex Disk Indicator
+#  apt: name=yd-tools update_cache=yes
  
 - name: Check token exists
   file:

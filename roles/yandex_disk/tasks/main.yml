@@ -3,7 +3,6 @@
   
 - set_fact:
     yandex_auth: "{{ lookup('keepass', {'tag':'yandex-disk'}, search='custom') }}"
-    default_mount_point: "{{home_path}}/.yandex-disk"
     token_path: "{{ config_path }}/passwd"
 
 - name: Make dir
@@ -13,18 +12,25 @@
     owner: "{{ user }}"
     group: "{{ user }}"
 
-
 # https://yandex.com/support/disk/cli-clients.xml#cli-install
 - name: Key
   get_url:
     url: "https://repo.yandex.ru/yandex-disk/YANDEX-DISK-KEY.GPG"
     dest: "/etc/apt/keyrings/yandex-disk.asc"
+    mode: '0644'
 
 - name: Repo
-  apt_repository: repo='deb [signed-by=/etc/apt/keyrings/yandex-disk.asc] http://repo.yandex.ru/yandex-disk/deb/ stable main' filename="yandex-disk"
+  deb822_repository:
+    name: "yandex-disk"
+    types: [deb]
+    uris: "https://repo.yandex.ru/yandex-disk/deb/"
+    signed_by: /etc/apt/keyrings/yandex-disk.asc
+    architectures: [amd64]
+    suites: [stable]
+    components: [main]
 
 - name: apt-get install yandex-disk
-  apt: name=yandex-disk state=latest
+  apt: name=yandex-disk update_cache=yes
 
 - name: check config
   file:
@@ -35,7 +41,8 @@
 
 - name: ask mount point
   pause:
-    prompt: "Enter YD mount point ('{{ default_mount_point }}' by default)"
+    prompt: "YD mount point"
+    default: "{{home_path}}/.yandex-disk"
   register: mount_point
   changed_when: false
   when: check_yd_config.state == 'absent'
@@ -49,12 +56,28 @@
   become_user: "{{ user }}"
   when: check_yd_config.state == 'absent'
 
-# https://github.com/slytomcat/yandex-disk-indicator
-#- name: Yandex Disk Indicator - add ppa
-#  apt_repository: repo="ppa:slytomcat/ppa" codename="{{ codename }}" filename=yd-tools
+# - name: Key
+#   get_url:
+#     url: "https://ppa.launchpadcontent.net/slytomcat/ppa/ubuntu/dists/{{ codename }}/Release.gpg"
+#     dest: /etc/apt/keyrings/yandex-disk-indicator.asc
+#     mode: '0644'
 
-#- name: install Yandex Disk Indicator
-#  apt: name=yd-tools update_cache=yes
+# - name: Repo
+#   deb822_repository:
+#     name: "yd-tools"
+#     types: [deb]
+#     uris: "https://ppa.launchpadcontent.net/slytomcat/ppa/ubuntu/"
+#     signed_by: /etc/apt/keyrings/yandex-disk-indicator.asc
+#     architectures: [amd64]
+#     suites: ["{{ codename }}"]
+#     components: [main]
+
+# https://github.com/slytomcat/yandex-disk-indicator
+- name: Yandex Disk Indicator - add ppa
+  apt_repository: repo="ppa:slytomcat/ppa" codename="{{ codename }}" filename=yd-tools
+
+- name: install Yandex Disk Indicator
+  apt: name=yd-tools update_cache=yes
  
 - name: Check token exists
   file:

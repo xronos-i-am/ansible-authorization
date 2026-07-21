@@ -25,11 +25,13 @@
   vars_prompt:
     - name: user
       prompt: whoami?
+      default: dev
     - name: keepass_password
       prompt: "Enter keepass DB password"
       private: no
     - name: keepass_db_file
       prompt: "Enter path to keepass DB"
+      default: "/home/dev/Downloads/xronosiam.kdbx"
       private: no
 
   tasks:
@@ -37,7 +39,7 @@
     - debug: msg="Username {{user}}"
 
   roles:
-    - { role: python }
+    # - { role: pykeepass }
     - { role: ssh_agent }
     - { role: yandex_disk }
     # - { role: mailru_disk }

@@ -4,43 +4,32 @@
   hosts: 127.0.0.1
   connection: local
   become: yes
-  gather_facts: no
-
-  pre_tasks:
-    - name: Get ubuntu release
-      command: "sed 's/DISTRIB_CODENAME=//;t;d' /etc/upstream-release/lsb-release"
-      register: get_ubuntu_release
-      changed_when: False
-    - name: Get ubuntu version
-      command: "sed 's/DISTRIB_RELEASE=//;t;d' /etc/upstream-release/lsb-release"
-      register: get_ubuntu_version
-      changed_when: False
 
   vars:
-    codename: "{{get_ubuntu_release.stdout}}"
-    ubuntu_version: "{{get_ubuntu_version.stdout}}"
+    codename: "{{ansible_facts['distribution_release']}}"
+    ubuntu_version: "{{ansible_facts['distribution_version']}}"
     user_path: "~{{user}}"
     home_path: "{{user_path | expanduser}}"
 
   vars_prompt:
     - name: user
-      prompt: whoami?
-      default: dev
-    - name: keepass_password
-      prompt: "Enter keepass DB password"
+      prompt: "Set user"
+      default: "dev" 
       private: no
-    - name: keepass_db_file
-      prompt: "Enter path to keepass DB"
-      default: "/home/dev/Downloads/xronosiam.kdbx"
-      private: no
+    # - name: keepass_psw
+    #   prompt: "Enter keepass DB password"
+    #   private: no
+    # - name: keepass_dbx
+    #   prompt: "Enter path to keepass DB"
+    #   default: "/home/dev/Downloads/xronosiam.kdbx"
+    #   private: no
 
   tasks:
     - debug: msg="Ubuntu {{ubuntu_version}} {{codename}}"
     - debug: msg="Username {{user}}"
 
   roles:
-    # - { role: pykeepass }
-    - { role: ssh_agent }
-    - { role: yandex_disk }
+    ##- { role: ssh_agent }
+    ## - { role: yandex_disk }
     # - { role: mailru_disk }
-    - { role: rclone }
+    ## - { role: rclone }

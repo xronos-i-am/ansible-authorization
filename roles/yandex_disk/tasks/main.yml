@@ -1,8 +1,8 @@
 - set_fact:
     config_path: "{{home_path}}/.config/yandex-disk"
+    default_mount_point: "{{home_path}}/.yandex-disk"
   
 - set_fact:
-    yandex_auth: "{{ lookup('keepass', {'tag':'yandex-disk'}, search='custom') }}"
     token_path: "{{ config_path }}/passwd"
 
 - name: Make dir
@@ -42,7 +42,6 @@
 - name: ask mount point
   pause:
     prompt: "YD mount point"
-    default: "{{home_path}}/.yandex-disk"
   register: mount_point
   changed_when: false
   when: check_yd_config.state == 'absent'
@@ -73,11 +72,11 @@
 #     components: [main]
 
 # https://github.com/slytomcat/yandex-disk-indicator
-- name: Yandex Disk Indicator - add ppa
-  apt_repository: repo="ppa:slytomcat/ppa" codename="{{ codename }}" filename=yd-tools
+# - name: Yandex Disk Indicator - add ppa
+#   apt_repository: repo="ppa:slytomcat/ppa" filename=yd-tools
 
-- name: install Yandex Disk Indicator
-  apt: name=yd-tools update_cache=yes
+# - name: install Yandex Disk Indicator
+#   apt: name=yd-tools update_cache=yes
  
 - name: Check token exists
   file:
@@ -86,9 +85,10 @@
   failed_when: false
   register: check_yd_token
 
-- name: Create token
-  command: yandex-disk token --password={{yandex_auth.password}} {{yandex_auth.username}} "{{ token_path }}"
-  become: true
-  become_user: "{{user}}"
+- debug: msg="yandex-disk token {{ token_path }}"
+  when: check_yd_token.state == 'absent'
+
+
+- debug: msg="yandex-disk start"
   when: check_yd_token.state == 'absent'
 

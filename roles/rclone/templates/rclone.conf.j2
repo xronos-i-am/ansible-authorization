@@ -6,10 +6,10 @@ token = {{ yandex_auth.fields.token }}
 
 [mailru_disk]
 type = webdav
-url = https://webdav.cloud.mail.ru:443
-vendor = other
-user = {{ mailru_auth.username }}
-pass = {{ mailru_auth.fields.pass }}
+url = https://webdav.cloud.mail.ru
+vendor = rclone
+user = xronos.i.am@mail.ru
+pass = "токен приложения (через rclone config)"
 
 [mailru_disk_encrypted]
 type = crypt
